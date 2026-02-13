@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="A premium, personalized Valentine's Day website with animated hearts and a heartfelt message."
+    />
+    <title>Valentine for You</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
+    />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="background-glow" aria-hidden="true"></div>
+    <div class="twinkle-layer" id="twinkle-layer" aria-hidden="true"></div>
+    <div class="hearts-layer" id="hearts-layer" aria-hidden="true"></div>
+    <div class="sparkle-layer" id="sparkle-layer" aria-hidden="true"></div>
+    <div class="kiss-layer" id="kiss-layer" aria-hidden="true"></div>
+    <div class="forever-layer" id="forever-layer" aria-hidden="true"></div>
+    <div class="rose-rain-layer" id="rose-rain-layer" aria-hidden="true"></div>
+    <div class="hug-layer" id="hug-layer" aria-hidden="true">
+      <span class="hug-emoji hug-left">🥰</span>
+      <span class="hug-emoji hug-right">😍</span>
+      <span class="hug-emoji hug-center">🤗</span>
+      <span class="hug-emoji hug-heart">💞</span>
+    </div>
+    <div class="surprise-layer" id="surprise-layer" aria-hidden="true">
+      <div class="gift-scene" id="gift-scene">
+        <div class="gift-box" aria-hidden="true">
+          <span class="gift-lid"></span>
+          <span class="gift-body"></span>
+          <span class="gift-ribbon"></span>
+          <span class="gift-bow gift-bow-left"></span>
+          <span class="gift-bow gift-bow-right"></span>
+          <span class="gift-bow-knot"></span>
+        </div>
+        <article class="love-letter" id="love-letter">
+          <p class="love-letter-title">A Letter For You 💌</p>
+          <p class="love-letter-text" id="surprise-letter-text"></p>
+          <p class="love-letter-sign">Forever yours</p>
+        </article>
+      </div>
+    </div>
+    <div class="bouquet-pop" id="bouquet-pop" aria-hidden="true">💐</div>
+
+    <section
+      class="locker-intro"
+      id="locker-intro"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Love locker challenge"
+    >
+      <div class="locker-noise" aria-hidden="true"></div>
+      <div class="locker-panel">
+        <p class="locker-kicker">Step 1</p>
+        <h2 class="locker-title" id="locker-title">Unlock the Love Locker</h2>
+        <p class="locker-subtitle" id="locker-subtitle">
+          Complete the torn puzzle first, then use the 6-digit hint to unlock.
+        </p>
+
+        <div class="locker-stage-grid">
+          <div class="puzzle-stage">
+            <div class="puzzle-board" id="puzzle-board" aria-label="Puzzle board"></div>
+            <div class="puzzle-tray" id="puzzle-tray" aria-label="Puzzle tray"></div>
+          </div>
+
+          <div class="locker-access">
+            <p class="locker-hint" id="locker-hint">
+              Assemble the puzzle to reveal the passcode hint.
+            </p>
+            <div class="locker-code-display" id="locker-code-display" aria-label="Passcode display"></div>
+            <div class="locker-keypad" id="locker-keypad" aria-label="Passcode keypad"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section
+      class="bouquet-stage hidden"
+      id="bouquet-stage"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Bouquet assembly challenge"
+    >
+      <div class="bouquet-noise" aria-hidden="true"></div>
+      <div class="bouquet-panel">
+        <p class="bouquet-kicker">Step 2</p>
+        <h2 class="bouquet-title" id="bouquet-title">Assemble the Bouquet</h2>
+        <p class="bouquet-subtitle" id="bouquet-subtitle">
+          Place each flower in the correct spot to continue.
+        </p>
+
+        <div class="bouquet-workspace">
+          <div class="bouquet-canvas" id="bouquet-canvas" aria-label="Bouquet canvas">
+            <span class="bouquet-wrapper-shape" aria-hidden="true"></span>
+            <button class="bouquet-slot bouquet-slot-1" type="button" data-slot="rose"></button>
+            <button class="bouquet-slot bouquet-slot-2" type="button" data-slot="peony"></button>
+            <button class="bouquet-slot bouquet-slot-3" type="button" data-slot="tulip"></button>
+            <button class="bouquet-slot bouquet-slot-4" type="button" data-slot="daisy"></button>
+            <button class="bouquet-slot bouquet-slot-5" type="button" data-slot="ribbon"></button>
+          </div>
+          <div class="bouquet-pieces" id="bouquet-pieces"></div>
+        </div>
+
+        <p class="bouquet-status" id="bouquet-status">Select a piece, then tap the matching slot.</p>
+      </div>
+    </section>
+
+    <section
+      class="love-vault-intro hidden"
+      id="love-vault-intro"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Love vault challenge"
+    >
+      <div class="vault-noise" aria-hidden="true"></div>
+      <div class="vault-panel">
+        <p class="vault-kicker">Shhh... something special is locked</p>
+        <h2 class="vault-title" id="vault-title">A Gift Safe Awaits</h2>
+        <p class="vault-subtitle" id="vault-subtitle">
+          Fill the love tube before it drains, then unlock your surprise.
+        </p>
+
+        <div class="vault-safe" id="vault-safe" aria-hidden="true">
+          <div class="vault-door">
+            <span class="vault-rim"></span>
+            <span class="vault-wheel"></span>
+            <span class="vault-wheel-core"></span>
+            <span class="vault-bolt vault-bolt-top"></span>
+            <span class="vault-bolt vault-bolt-right"></span>
+            <span class="vault-bolt vault-bolt-bottom"></span>
+            <span class="vault-bolt vault-bolt-left"></span>
+          </div>
+          <div class="vault-inner-glow"></div>
+        </div>
+
+        <div class="vault-meter-wrap">
+          <div class="vault-meter-track">
+            <div class="vault-meter-fill" id="vault-meter-fill"></div>
+          </div>
+          <div class="vault-meter-meta">
+            <span class="vault-meter-percent" id="vault-meter-percent">0%</span>
+            <span class="vault-meter-status" id="vault-meter-status">Keep charging...</span>
+          </div>
+        </div>
+
+        <button class="vault-charge-button" id="vault-charge-button" type="button">
+          เติมความรัก +
+        </button>
+      </div>
+    </section>
+
+    <main class="page-shell">
+      <section class="valentine-card" id="valentine-card">
+        <p class="eyebrow">To <span id="recipient-name">My Love</span></p>
+        <h1 id="main-title">A Valentine Just for You</h1>
+        <div class="cute-badges" id="cute-badges" aria-hidden="true"></div>
+
+        <p class="message" id="personal-message" aria-live="polite"></p>
+        <p class="love-quote" id="love-quote" aria-live="polite"></p>
+
+        <div class="love-meter-wrap" id="love-meter-wrap" aria-hidden="true">
+          <div class="love-meter-track">
+            <div class="love-meter-fill" id="love-meter-fill"></div>
+          </div>
+          <p class="love-meter-label">Love Meter: <span id="love-meter-value">0%</span></p>
+        </div>
+
+        <figure class="photo-wrap" id="photo-wrap" hidden>
+          <img id="memory-image" alt="A special memory" loading="lazy" />
+        </figure>
+
+        <div class="button-row button-row-main">
+          <button class="heart-button" id="heart-button" type="button">
+            Open My Heart ❤️
+          </button>
+          <button class="kiss-button" id="kiss-button" type="button">
+            Send a Kiss 😘
+          </button>
+        </div>
+        <div class="button-row button-row-extra">
+          <button class="mini-button" id="hug-button" type="button">
+            Warm Hug 🤗
+          </button>
+          <button class="mini-button" id="surprise-button" type="button">
+            Little Surprise 🎁
+          </button>
+          <button class="mini-button" id="rose-rain-button" type="button">
+            Rose Rain 🌹
+          </button>
+        </div>
+      </section>
+    </main>
+
+    <audio id="background-music" loop preload="none"></audio>
+    <button class="music-toggle" id="music-toggle" type="button" aria-label="Toggle background music">
+      <span class="music-icon" id="music-icon" aria-hidden="true">💗</span>
+      <span class="music-text" id="music-toggle-text">BGM Off</span>
+    </button>
+
+    <script src="config.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="main.js"></script>
+  </body>
+</html>
