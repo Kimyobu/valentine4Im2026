@@ -14,10 +14,6 @@
       href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@500;700&family=Manrope:wght@400;500;600&display=swap"
       rel="stylesheet"
     />
-    <link
-      rel="stylesheet"
-      href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css"
-    />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -177,7 +173,13 @@
         </div>
 
         <figure class="photo-wrap" id="photo-wrap" hidden>
-          <img id="memory-image" alt="A special memory" loading="lazy" />
+          <img
+            id="memory-image"
+            alt="A special memory"
+            loading="lazy"
+            decoding="async"
+            fetchpriority="low"
+          />
         </figure>
 
         <div class="button-row button-row-main">
@@ -209,7 +211,6 @@
     </button>
 
     <script src="config.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="main.js"></script>
   </body>
 </html>

@@ -135,6 +135,10 @@
   let bouquetPiecesById = {};
   let bouquetPlaced = 0;
   let introFlowDone = false;
+  let optionalPhotoPrepared = false;
+  let optionalPhotoLoaded = false;
+  let optionalPhotoError = false;
+  let sweetAlertLoadPromise = null;
 
   const clampSpeed = Number.isFinite(config.animationSpeed)
     ? Math.min(Math.max(config.animationSpeed, 0.35), 2.5)
@@ -934,37 +938,42 @@
     const text = String(config.musicPromptText || defaults.musicPromptText);
     const confirmText = String(config.musicPromptConfirmText || defaults.musicPromptConfirmText);
     const cancelText = String(config.musicPromptCancelText || defaults.musicPromptCancelText);
+    const fallbackPrompt = () => {
+      const shouldPlay = window.confirm(`${title}\n\n${text}`);
+      applyMusicPromptChoice(shouldPlay);
+    };
 
-    if (window.Swal && typeof window.Swal.fire === "function") {
-      window.Swal.fire({
-        title,
-        text,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonText: confirmText,
-        cancelButtonText: cancelText,
-        allowOutsideClick: false,
-        allowEscapeKey: true,
-        customClass: {
-          popup: "swal-valentine-popup",
-          title: "swal-valentine-title",
-          htmlContainer: "swal-valentine-text"
+    ensureSweetAlertLoaded()
+      .then((loaded) => {
+        if (!loaded || !window.Swal || typeof window.Swal.fire !== "function") {
+          fallbackPrompt();
+          return;
         }
-      }).then((result) => {
-        if (result.isConfirmed) {
-          musicManuallyPaused = false;
-          playMusic({ force: true });
-        } else {
-          musicManuallyPaused = true;
-          pauseMusic();
-          updateMusicToggle(false);
-        }
+
+        window.Swal.fire({
+          title,
+          text,
+          icon: "question",
+          showCancelButton: true,
+          confirmButtonText: confirmText,
+          cancelButtonText: cancelText,
+          allowOutsideClick: false,
+          allowEscapeKey: true,
+          customClass: {
+            popup: "swal-valentine-popup",
+            title: "swal-valentine-title",
+            htmlContainer: "swal-valentine-text"
+          }
+        }).then((result) => {
+          applyMusicPromptChoice(Boolean(result && result.isConfirmed));
+        });
+      })
+      .catch(() => {
+        fallbackPrompt();
       });
-      return;
-    }
+  }
 
-    const shouldPlay = window.confirm(`${title}\n\n${text}`);
-
+  function applyMusicPromptChoice(shouldPlay) {
     if (shouldPlay) {
       musicManuallyPaused = false;
       playMusic({ force: true });
@@ -974,6 +983,71 @@
     musicManuallyPaused = true;
     pauseMusic();
     updateMusicToggle(false);
+  }
+
+  function ensureSweetAlertLoaded() {
+    if (window.Swal && typeof window.Swal.fire === "function") {
+      return Promise.resolve(true);
+    }
+
+    if (sweetAlertLoadPromise) {
+      return sweetAlertLoadPromise;
+    }
+
+    const cssUrl = "https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css";
+    const jsUrl = "https://cdn.jsdelivr.net/npm/sweetalert2@11";
+
+    sweetAlertLoadPromise = Promise.all([
+      loadStyleAsset("swal2-style", cssUrl),
+      loadScriptAsset("swal2-script", jsUrl)
+    ])
+      .then((results) => Boolean(results[1]))
+      .catch(() => false);
+
+    return sweetAlertLoadPromise;
+  }
+
+  function loadStyleAsset(id, href) {
+    const existing = document.getElementById(id);
+
+    if (existing) {
+      return Promise.resolve(true);
+    }
+
+    return new Promise((resolve) => {
+      const linkEl = document.createElement("link");
+      linkEl.id = id;
+      linkEl.rel = "stylesheet";
+      linkEl.href = href;
+      linkEl.onload = () => resolve(true);
+      linkEl.onerror = () => resolve(false);
+      document.head.appendChild(linkEl);
+    });
+  }
+
+  function loadScriptAsset(id, src) {
+    const existing = document.getElementById(id);
+
+    if (existing) {
+      if (window.Swal && typeof window.Swal.fire === "function") {
+        return Promise.resolve(true);
+      }
+
+      return new Promise((resolve) => {
+        existing.addEventListener("load", () => resolve(true), { once: true });
+        existing.addEventListener("error", () => resolve(false), { once: true });
+      });
+    }
+
+    return new Promise((resolve) => {
+      const scriptEl = document.createElement("script");
+      scriptEl.id = id;
+      scriptEl.src = src;
+      scriptEl.async = true;
+      scriptEl.onload = () => resolve(true);
+      scriptEl.onerror = () => resolve(false);
+      document.body.appendChild(scriptEl);
+    });
   }
 
   function bindInteractions() {
@@ -1255,17 +1329,46 @@
       loveMeterWrapEl.hidden = true;
     }
 
-    if (!config.imagePath || !memoryImageEl || !photoWrapEl) {
+    prepareOptionalPhoto();
+  }
+
+  function prepareOptionalPhoto() {
+    if (!memoryImageEl || !photoWrapEl) {
+      optionalPhotoPrepared = false;
       return;
     }
 
-    memoryImageEl.src = config.imagePath;
+    const imagePath = String(config.imagePath || "").trim();
+
+    if (!imagePath) {
+      optionalPhotoPrepared = false;
+      optionalPhotoLoaded = false;
+      optionalPhotoError = false;
+      photoWrapEl.hidden = true;
+      photoWrapEl.classList.remove("visible");
+      memoryImageEl.removeAttribute("src");
+      return;
+    }
+
+    optionalPhotoPrepared = true;
+    optionalPhotoLoaded = false;
+    optionalPhotoError = false;
+
+    memoryImageEl.dataset.src = imagePath;
+    memoryImageEl.loading = "lazy";
+    memoryImageEl.decoding = "async";
+    memoryImageEl.fetchPriority = "low";
+    photoWrapEl.hidden = true;
+    photoWrapEl.classList.remove("visible");
+
     memoryImageEl.addEventListener(
       "load",
       () => {
+        optionalPhotoLoaded = true;
+        optionalPhotoError = false;
         photoWrapEl.hidden = false;
 
-        if (hasOpened) {
+        if (messageEl && messageEl.classList.contains("visible")) {
           photoWrapEl.classList.add("visible");
         }
       },
@@ -1275,10 +1378,30 @@
     memoryImageEl.addEventListener(
       "error",
       () => {
+        optionalPhotoLoaded = false;
+        optionalPhotoError = true;
         photoWrapEl.hidden = true;
       },
       { once: true }
     );
+  }
+
+  function ensurePhotoLoaded() {
+    if (!optionalPhotoPrepared || optionalPhotoLoaded || optionalPhotoError || !memoryImageEl) {
+      return;
+    }
+
+    if (memoryImageEl.getAttribute("src")) {
+      return;
+    }
+
+    const source = String(memoryImageEl.dataset.src || "").trim();
+
+    if (!source) {
+      return;
+    }
+
+    memoryImageEl.src = source;
   }
 
   function renderBadges() {
@@ -1297,14 +1420,19 @@
   }
 
   function configureMedia() {
-    if (!backgroundMusicEl || !config.backgroundMusicPath) {
+    const musicPath = String(config.backgroundMusicPath || "").trim();
+
+    if (!backgroundMusicEl || !musicPath) {
       hasMusicSource = false;
       updateMusicToggle(false);
       return;
     }
 
     hasMusicSource = true;
-    backgroundMusicEl.src = config.backgroundMusicPath;
+    backgroundMusicEl.dataset.src = musicPath;
+    backgroundMusicEl.preload = "none";
+    backgroundMusicEl.removeAttribute("src");
+    backgroundMusicEl.load();
     backgroundMusicEl.volume = normalizeVolume(config.musicVolume);
 
     backgroundMusicEl.addEventListener("play", () => {
@@ -1343,7 +1471,7 @@
   function playMusic(options = {}) {
     const { force = false } = options;
 
-    if (!backgroundMusicEl || !backgroundMusicEl.src || !hasMusicSource) {
+    if (!backgroundMusicEl || !hasMusicSource) {
       return;
     }
 
@@ -1351,10 +1479,33 @@
       return;
     }
 
+    if (!ensureMusicSourceLoaded()) {
+      return;
+    }
+
     backgroundMusicEl.play().catch(() => {
       // Browser policy can block playback until a user gesture.
       updateMusicToggle(false);
     });
+  }
+
+  function ensureMusicSourceLoaded() {
+    if (!backgroundMusicEl) {
+      return false;
+    }
+
+    if (backgroundMusicEl.getAttribute("src")) {
+      return true;
+    }
+
+    const source = String(backgroundMusicEl.dataset.src || "").trim();
+
+    if (!source) {
+      return false;
+    }
+
+    backgroundMusicEl.src = source;
+    return true;
   }
 
   function pauseMusic() {
@@ -1397,6 +1548,7 @@
     }
 
     messageEl.classList.add("visible");
+    ensurePhotoLoaded();
     const fullMessage = messageEl.dataset.fullMessage || defaults.personalMessage;
 
     if (withTypewriter && !prefersReducedMotion) {
@@ -1406,7 +1558,7 @@
       messageEl.textContent = fullMessage;
     }
 
-    if (config.imagePath && photoWrapEl && !photoWrapEl.hidden) {
+    if (optionalPhotoPrepared && optionalPhotoLoaded && photoWrapEl && !photoWrapEl.hidden) {
       photoWrapEl.classList.add("visible");
     }
   }

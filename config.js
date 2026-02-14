@@ -22,7 +22,7 @@ window.ValentineConfig = Object.freeze({
   imagePath: "assets/images/valentine-photo.svg",
 
   // Optional background music path (mp3 recommended).
-  backgroundMusicPath: "assets/audio/love-theme.mp3",
+  backgroundMusicPath: "assets/audio/love-theme-lite.mp3",
 
   // Background music volume (0 to 1).
   musicVolume: 0.55,
