@@ -39,7 +39,7 @@ window.ValentineConfig = Object.freeze({
   // Step 1: locker intro with puzzle + 6-digit passcode.
   enableLockerIntro: true,
   lockerPasscode: "140225",
-  lockerPuzzleImagePath: "assets/images/locker-puzzle.svg",
+  lockerPuzzleImagePath: "assets/images/locker-puzzle.jpg",
   lockerTitle: "Unlock the Love Locker",
   lockerSubtitle: "ต่อจิ๊กซอว์ภาพขาดให้เสร็จ แล้วใช้คำใบ้รหัส 6 ตัวเพื่อปลดล็อก",
 
